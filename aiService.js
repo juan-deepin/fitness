@@ -18,7 +18,8 @@ export function buildPrompt(basePrompt, clientData) {
     `Alimentos no deseados: ${clientData.alimentos_no_deseados || "Ninguno"}`,
     `Observaciones: ${clientData.observaciones || "Sin observaciones"}`,
     "",
-    "RESPUESTA OBLIGATORIA: JSON limpio valido con titulo, cliente, objetivo, calorias_estimadas, recomendaciones_generales, semanas, sustituciones, notas_finales."
+    "RESPUESTA OBLIGATORIA: JSON limpio valido con titulo, cliente, objetivo, calorias_estimadas, recomendaciones_generales, semanas, sustituciones, notas_finales.",
+    "IMPORTANTE: las sustituciones deben ser personalizadas segun alergias, restricciones, alimentos no deseados, objetivo y actividad. Evitar listas genericas repetidas."
   ].join("\n");
 }
 
@@ -79,11 +80,7 @@ function simulatePlan(payload) {
             semana: `Semana ${n}`,
             comidas: buildSampleMeals(payload.comidas_por_dia, n)
           })),
-          sustituciones: [
-            "Pollo por pavo o tofu firme.",
-            "Arroz por quinoa o papa cocida.",
-            "Yogur griego por yogur sin lactosa."
-          ],
+          sustituciones: buildSampleSubstitutions(payload),
           notas_finales: [
             "Ajustar porciones segun progreso semanal.",
             "Mantener consistencia durante las 4 semanas."
@@ -137,6 +134,59 @@ function buildSampleMeals(mealsPerDay, weekNumber = 1) {
   const pool = WEEK_MEALS[(weekNumber - 1) % 4];
   const count = Number.isFinite(mealsPerDay) ? Math.max(3, Math.min(6, mealsPerDay)) : 4;
   return pool.slice(0, count);
+}
+
+function buildSampleSubstitutions(payload) {
+  const objetivo = String(payload.objetivo || "").toLowerCase();
+  const actividad = String(payload.actividad || "").toLowerCase();
+  const alergias = String(payload.alergias || "").toLowerCase();
+  const restricciones = String(payload.restricciones || "").toLowerCase();
+  const noDeseados = String(payload.alimentos_no_deseados || "").toLowerCase();
+
+  const isVeg = /(vegetar|vegano)/.test(restricciones);
+  const sinLactosa = /(lactosa|leche|lacteo)/.test(alergias + " " + restricciones + " " + noDeseados);
+  const sinGluten = /(gluten|trigo|harina)/.test(alergias + " " + restricciones + " " + noDeseados);
+  const altaActividad = /(alto|muy alto)/.test(actividad);
+
+  const list = [];
+
+  if (isVeg) {
+    list.push("Pollo o pavo por tofu firme, tempeh o seitan.");
+    list.push("Atun o salmon por legumbres combinadas con quinoa.");
+  } else {
+    list.push("Pollo por pavo, merluza o lomo magro.");
+    list.push("Carne roja magra por pescado azul 2-3 veces por semana.");
+  }
+
+  if (sinLactosa) {
+    list.push("Yogur griego por yogur sin lactosa o yogur de coco sin azucar.");
+    list.push("Leche descremada por bebida de almendra o soja enriquecida.");
+  } else {
+    list.push("Yogur natural por kefir o queso cottage bajo en grasa.");
+  }
+
+  if (sinGluten) {
+    list.push("Pan integral o pasta por arroz, quinoa o papa cocida.");
+  } else {
+    list.push("Arroz blanco por arroz integral, quinoa o cuscus integral.");
+  }
+
+  if (/bajar grasa/.test(objetivo)) {
+    list.push("Frutos secos libres por porcion medida de 20-30 g.");
+    list.push("Salsas cremosas por yogur natural con limon y especias.");
+  } else if (/aumentar masa muscular/.test(objetivo)) {
+    list.push("Colacion simple por batido de proteina con avena y fruta.");
+    list.push("Guarnicion pequena por porcion extra de carbohidrato complejo.");
+  } else {
+    list.push("Snacks ultraprocesados por fruta, yogur y frutos secos en porcion.");
+  }
+
+  if (altaActividad) {
+    list.push("Pre-entreno bajo en energia por banana con miel y tostada integral.");
+    list.push("Post-entreno incompleto por proteina + carbohidrato en la primera hora.");
+  }
+
+  return list.slice(0, 8);
 }
 
 function estimateCalories(payload) {

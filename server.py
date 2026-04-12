@@ -81,7 +81,9 @@ def call_gemini(payload: dict, api_key: str) -> dict:
         "IMPORTANTE: cada semana debe tener comidas DISTINTAS y PROGRESIVAS entre si, "
         "variando los alimentos, preparaciones y porciones semana a semana; "
         "cada comida tiene 'tipo' y 'descripcion'), "
-        "sustituciones (array de strings), "
+        "sustituciones (array de 6 a 10 strings; deben ser PERSONALIZADAS segun "
+        "alergias, restricciones, alimentos no deseados, objetivo y actividad; "
+        "evita sustituciones genericas repetidas), "
         "notas_finales (array de strings). "
         "Adapta las calorias, porciones y recomendaciones al peso, altura, objetivo y actividad del cliente."
     )
