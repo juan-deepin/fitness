@@ -1,7 +1,7 @@
 export const DEFAULT_CONFIG = {
   brandName: "THE BLACK FITNESS",
   brandSlogan: "TÚ TAMBIÉN PUEDES",
-  aiEndpoint: "/api/generar-plan",
+  aiEndpoint: "",
   primaryColor: "#f30463",
   surfaceColor: "#101010",
   basePrompt:

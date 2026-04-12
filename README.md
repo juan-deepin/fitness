@@ -1,5 +1,7 @@
 # THE BLACK FITNESS - App de Planes Nutricionales con IA
 
+**Demo en vivo:** [https://juan-deepin.github.io/black-fitness-app/](https://juan-deepin.github.io/black-fitness-app/)
+
 Aplicación web cliente (frontend) para registrar datos de clientes, generar planes nutricionales mensuales con ayuda de IA, visualizar resultados, exportar a PDF y guardar historial local en el navegador.
 
 ## Características principales
@@ -93,7 +95,9 @@ Todo se guarda localmente en IndexedDB.
 
 ## Endpoint de IA esperado
 
-La app hace `POST` JSON a `aiEndpoint` y espera respuesta en formato JSON de plan.
+Por defecto `aiEndpoint` está vacío, lo que activa el **modo simulación local** automáticamente. Esto permite que la app funcione sin backend en GitHub Pages.
+
+Para activar una IA real, ingresa la URL de tu propio endpoint en la sección "Configuración local" de la app. Debe aceptar `POST` con JSON y devolver la estructura de plan descrita abajo.
 
 ### Ejemplo mínimo válido de respuesta
 
