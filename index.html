@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>THE BLACK FITNESS | Planes Nutricionales</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-shape bg-shape-1" aria-hidden="true"></div>
+  <div class="bg-shape bg-shape-2" aria-hidden="true"></div>
+
+  <main class="app-shell">
+    <section class="hero-panel card">
+      <img src="logo.jpeg" alt="Logo THE BLACK FITNESS" class="hero-logo" id="brandLogo" />
+      <p class="brand-kicker" id="brandName">THE BLACK FITNESS</p>
+      <h1 class="hero-title">Nutricion deportiva profesional con IA</h1>
+      <p class="hero-subtitle" id="brandSlogan">TÚ TAMBIÉN PUEDES</p>
+      <p class="hero-description">
+        Registra clientes, genera planes nutricionales de 4 semanas y entrega PDFs profesionales.
+        Toda la informacion queda guardada localmente en tu navegador con IndexedDB.
+      </p>
+      <ul class="benefits">
+        <li>Persistencia local segura</li>
+        <li>Vista previa premium del plan</li>
+        <li>Historial completo y reutilizable</li>
+      </ul>
+    </section>
+
+    <section class="form-panel card">
+      <header class="section-header">
+        <h2>Datos del cliente</h2>
+        <p>Completa el formulario para generar un plan mensual.</p>
+      </header>
+
+      <form id="clientForm" novalidate>
+        <div class="grid-form">
+          <label>Nombre completo*
+            <input type="text" name="nombre" required />
+          </label>
+          <label>Edad*
+            <input type="number" name="edad" min="10" max="100" step="1" required />
+          </label>
+          <label>Peso (kg)*
+            <input type="number" name="peso" min="20" max="300" step="0.1" required />
+          </label>
+          <label>Altura (cm)*
+            <input type="number" name="altura" min="100" max="250" step="1" required />
+          </label>
+          <label>Sexo*
+            <select name="sexo" required>
+              <option value="">Seleccionar...</option>
+              <option value="Femenino">Femenino</option>
+              <option value="Masculino">Masculino</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </label>
+          <label>Objetivo fisico*
+            <select name="objetivo" required>
+              <option value="">Seleccionar...</option>
+              <option value="Bajar grasa">Bajar grasa</option>
+              <option value="Aumentar masa muscular">Aumentar masa muscular</option>
+              <option value="Mantener peso">Mantener peso</option>
+            </select>
+          </label>
+          <label>Nivel de actividad*
+            <select name="actividad" required>
+              <option value="">Seleccionar...</option>
+              <option value="Sedentario">Sedentario</option>
+              <option value="Ligero (1-2 dias/semana)">Ligero (1-2 dias/semana)</option>
+              <option value="Moderado (3-4 dias/semana)">Moderado (3-4 dias/semana)</option>
+              <option value="Alto (5-6 dias/semana)">Alto (5-6 dias/semana)</option>
+              <option value="Muy alto (doble sesion)">Muy alto (doble sesion)</option>
+            </select>
+          </label>
+          <label>Comidas por dia*
+            <input type="number" name="comidas_por_dia" min="3" max="8" step="1" required />
+          </label>
+          <label>Alergias
+            <input type="text" name="alergias" placeholder="Ej: lactosa, frutos secos" />
+          </label>
+          <label>Restricciones alimentarias
+            <input type="text" name="restricciones" placeholder="Ej: vegetariano" />
+          </label>
+          <label>Alimentos no deseados
+            <input type="text" name="alimentos_no_deseados" placeholder="Ej: mariscos" />
+          </label>
+          <label class="full-width">Observaciones adicionales
+            <textarea name="observaciones" rows="3" placeholder="Detalles relevantes para personalizar el plan"></textarea>
+          </label>
+        </div>
+
+        <div class="actions">
+          <button type="submit" class="btn btn-primary" id="generateBtn">Generar plan con IA</button>
+          <button type="button" class="btn btn-secondary" id="clearFormBtn">Limpiar formulario</button>
+          <button type="button" class="btn btn-secondary" id="retryBtn" disabled>Reintentar IA</button>
+        </div>
+        <p id="statusMessage" class="status"></p>
+      </form>
+    </section>
+  </main>
+
+  <section class="preview-section card" id="previewSection">
+    <header class="section-header inline">
+      <h2>Vista previa del plan</h2>
+      <button type="button" id="downloadPdfBtn" class="btn btn-accent" disabled>Descargar PDF</button>
+    </header>
+    <div id="planPreview" class="empty-state">Aun no se ha generado ningun plan.</div>
+  </section>
+
+  <section class="history-section card">
+    <header class="section-header inline">
+      <h2>Planes generados</h2>
+      <button type="button" id="refreshHistoryBtn" class="btn btn-secondary">Actualizar</button>
+    </header>
+    <div id="historyList" class="history-list empty-state">No hay planes guardados.</div>
+  </section>
+
+  <section class="settings-section card">
+    <header class="section-header">
+      <h2>Configuracion local</h2>
+      <p>Estos datos se guardan en IndexedDB y personalizan la marca y la conexion IA.</p>
+    </header>
+    <form id="settingsForm" novalidate>
+      <div class="grid-form">
+        <label>Nombre comercial
+          <input type="text" name="brandName" placeholder="THE BLACK FITNESS" />
+        </label>
+        <label>Eslogan
+          <input type="text" name="brandSlogan" placeholder="TÚ TAMBIÉN PUEDES" />
+        </label>
+        <label>Endpoint IA
+          <input type="url" name="aiEndpoint" placeholder="/api/generar-plan" />
+        </label>
+        <label>Color primario
+          <input type="color" name="primaryColor" value="#f30463" />
+        </label>
+        <label>Color fondo
+          <input type="color" name="surfaceColor" value="#101010" />
+        </label>
+        <label class="full-width">Prompt base editable
+          <textarea name="basePrompt" rows="4"></textarea>
+        </label>
+        <label class="full-width">Logo personalizado (opcional)
+          <input type="file" id="logoInput" accept="image/*" />
+        </label>
+      </div>
+      <div class="actions">
+        <button type="submit" class="btn btn-primary">Guardar configuracion</button>
+      </div>
+      <p id="settingsStatus" class="status"></p>
+    </form>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
