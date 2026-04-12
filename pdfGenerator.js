@@ -14,7 +14,7 @@ export async function generatePlanPdf({ plan, config, logoDataUrl }) {
 
   if (logoDataUrl) {
     try {
-      doc.addImage(logoDataUrl, "JPEG", margin, y - 16, 130, 60);
+      doc.addImage(logoDataUrl, "JPEG", margin, y - 16, 180, 85);
     } catch (error) {
       // Ignorar error de logo para no bloquear la descarga.
     }
@@ -22,11 +22,11 @@ export async function generatePlanPdf({ plan, config, logoDataUrl }) {
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
-  doc.text(brandName, margin + 145, y + 10);
+  doc.text(brandName, margin + 195, y + 18);
   doc.setFontSize(11);
   doc.setFont("helvetica", "normal");
-  doc.text(slogan, margin + 145, y + 28);
-  y += 70;
+  doc.text(slogan, margin + 195, y + 38);
+  y += 100;
 
   doc.setDrawColor(243, 4, 99);
   doc.setLineWidth(1);
