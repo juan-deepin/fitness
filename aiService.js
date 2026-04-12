@@ -77,7 +77,7 @@ function simulatePlan(payload) {
           ],
           semanas: [1, 2, 3, 4].map((n) => ({
             semana: `Semana ${n}`,
-            comidas: buildSampleMeals(payload.comidas_por_dia)
+            comidas: buildSampleMeals(payload.comidas_por_dia, n)
           })),
           sustituciones: [
             "Pollo por pavo o tofu firme.",
@@ -94,18 +94,49 @@ function simulatePlan(payload) {
   });
 }
 
-function buildSampleMeals(mealsPerDay) {
-  const mealTemplate = [
-    { tipo: "Desayuno", descripcion: "Avena con proteina, fruta y semillas." },
-    { tipo: "Merienda", descripcion: "Yogur griego con frutos rojos y nueces." },
-    { tipo: "Almuerzo", descripcion: "Pollo a la plancha con arroz integral y ensalada." },
-    { tipo: "Cena", descripcion: "Pescado al horno con pure de batata y verduras." },
-    { tipo: "Snack", descripcion: "Batido de proteina con banana." },
-    { tipo: "Colacion", descripcion: "Hummus con bastones de zanahoria." }
-  ];
+const WEEK_MEALS = [
+  // Semana 1
+  [
+    { tipo: "Desayuno",  descripcion: "Avena con proteina en polvo, banana y semillas de chia." },
+    { tipo: "Merienda",  descripcion: "Yogur griego natural con frutos rojos y nueces." },
+    { tipo: "Almuerzo",  descripcion: "Pechuga de pollo a la plancha con arroz integral y ensalada verde." },
+    { tipo: "Cena",      descripcion: "Salmon al horno con brocoli y pure de batata." },
+    { tipo: "Snack",     descripcion: "Batido de proteina con leche descremada y banana." },
+    { tipo: "Colacion",  descripcion: "Hummus con bastones de zanahoria y apio." }
+  ],
+  // Semana 2
+  [
+    { tipo: "Desayuno",  descripcion: "Tostadas integrales con huevos revueltos y aguacate." },
+    { tipo: "Merienda",  descripcion: "Manzana con mantequilla de mani natural." },
+    { tipo: "Almuerzo",  descripcion: "Tiras de pavo salteadas con quinoa y pimientos." },
+    { tipo: "Cena",      descripcion: "Merluza al vapor con chauchas salteadas y papa cocida." },
+    { tipo: "Snack",     descripcion: "Cottage con pepino y oregano." },
+    { tipo: "Colacion",  descripcion: "Mix de frutos secos sin sal (30 g)." }
+  ],
+  // Semana 3
+  [
+    { tipo: "Desayuno",  descripcion: "Panqueques de avena y claras de huevo con miel y kiwi." },
+    { tipo: "Merienda",  descripcion: "Kefir con granola sin azucar y arandanos." },
+    { tipo: "Almuerzo",  descripcion: "Lomo de res magro con lentejas y ensalada de tomate." },
+    { tipo: "Cena",      descripcion: "Pechuga de pollo al oregano con calabacin a la plancha y arroz integral." },
+    { tipo: "Snack",     descripcion: "Batido verde con espinaca, pina y proteina." },
+    { tipo: "Colacion",  descripcion: "Galletas de arroz con queso descremado." }
+  ],
+  // Semana 4
+  [
+    { tipo: "Desayuno",  descripcion: "Bowl de quinoa con leche vegetal, fresas y almendras." },
+    { tipo: "Merienda",  descripcion: "Pera con queso ricotta y miel." },
+    { tipo: "Almuerzo",  descripcion: "Atun en agua con pasta integral, tomate cherry y albahaca." },
+    { tipo: "Cena",      descripcion: "Tofu salteado con verduras al wok, arroz basmati y salsa de soja baja en sodio." },
+    { tipo: "Snack",     descripcion: "Batido de cacao puro, avena y leche descremada." },
+    { tipo: "Colacion",  descripcion: "Edamame cocido con sal baja en sodio." }
+  ]
+];
 
+function buildSampleMeals(mealsPerDay, weekNumber = 1) {
+  const pool = WEEK_MEALS[(weekNumber - 1) % 4];
   const count = Number.isFinite(mealsPerDay) ? Math.max(3, Math.min(6, mealsPerDay)) : 4;
-  return mealTemplate.slice(0, count);
+  return pool.slice(0, count);
 }
 
 function estimateCalories(payload) {

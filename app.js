@@ -150,6 +150,17 @@ async function processGeneration(formPayload) {
     const aiResponse = await requestPlanFromAI(payloadIA, state.config);
     const plan = validatePlanJson(aiResponse);
 
+    // Garantizar que plan.cliente siempre refleje los datos exactos del formulario.
+    // Gemini puede omitir o alterar campos como peso y altura.
+    plan.cliente = {
+      ...(plan.cliente && typeof plan.cliente === "object" ? plan.cliente : {}),
+      nombre: formPayload.nombre,
+      edad: formPayload.edad,
+      peso: formPayload.peso,
+      altura: formPayload.altura,
+      sexo: formPayload.sexo
+    };
+
     const planId = await addPlan({
       clienteId,
       fecha: new Date().toISOString(),

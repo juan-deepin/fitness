@@ -70,9 +70,20 @@ def call_gemini(payload: dict, api_key: str) -> dict:
         raise ValueError("No se recibio prompt_interno en el payload.")
 
     instruction = (
-        "Responde solo JSON valido. Sin markdown ni texto extra. "
-        "El JSON debe incluir: titulo, cliente, objetivo, calorias_estimadas, "
-        "recomendaciones_generales, semanas, sustituciones, notas_finales."
+        "Responde solo JSON valido, sin markdown ni texto fuera del JSON. "
+        "El JSON DEBE incluir exactamente estos campos: "
+        "titulo (string), "
+        "cliente (objeto con nombre, edad, peso, altura, sexo tal como aparecen en los datos del cliente), "
+        "objetivo (string), "
+        "calorias_estimadas (string con formato '2000 kcal/dia'), "
+        "recomendaciones_generales (array de strings), "
+        "semanas (array de exactamente 4 objetos con 'semana' y 'comidas'; "
+        "IMPORTANTE: cada semana debe tener comidas DISTINTAS y PROGRESIVAS entre si, "
+        "variando los alimentos, preparaciones y porciones semana a semana; "
+        "cada comida tiene 'tipo' y 'descripcion'), "
+        "sustituciones (array de strings), "
+        "notas_finales (array de strings). "
+        "Adapta las calorias, porciones y recomendaciones al peso, altura, objetivo y actividad del cliente."
     )
 
     body = {
