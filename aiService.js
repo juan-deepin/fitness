@@ -23,7 +23,12 @@ export function buildPrompt(basePrompt, clientData) {
 }
 
 export async function requestPlanFromAI(payload, config) {
-  const endpoint = (config.aiEndpoint || "").trim();
+  const configuredEndpoint = (config.aiEndpoint || "").trim();
+  const autoEndpoint =
+    window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+      ? "/api/generar-plan"
+      : "";
+  const endpoint = configuredEndpoint || autoEndpoint;
 
   if (!endpoint) {
     return simulatePlan(payload);
