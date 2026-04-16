@@ -30,30 +30,138 @@ export async function requestPlanFromAI(payload, config) {
       ? "/api/generar-plan"
       : "";
   const endpoint = configuredEndpoint || autoEndpoint;
+  const publicConfig = window.APP_CONFIG || {};
+  const geminiApiKey = String(publicConfig.GEMINI_API_KEY || "").trim();
+  const geminiModel = String(publicConfig.GEMINI_MODEL || "gemini-1.5-flash").trim();
 
-  if (!endpoint) {
-    return simulatePlan(payload);
+  if (endpoint) {
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error del endpoint IA (${response.status}).`);
+      }
+
+      const json = await response.json();
+      return validatePlanJson(json);
+    } catch (error) {
+      console.warn("Fallo endpoint IA. Se intentara Gemini directo o simulacion.", error);
+    }
+  }
+
+  if (geminiApiKey) {
+    try {
+      const json = await requestPlanFromGeminiDirect(payload, geminiApiKey, geminiModel);
+      return validatePlanJson(json);
+    } catch (error) {
+      console.warn("Fallo Gemini directo. Se usa simulacion local.", error);
+    }
+  }
+
+  return simulatePlan(payload);
+}
+
+async function requestPlanFromGeminiDirect(payload, apiKey, model) {
+  const instruction =
+    "Responde solo JSON valido, sin markdown ni texto extra. " +
+    "El JSON debe incluir titulo, cliente, objetivo, calorias_estimadas, " +
+    "recomendaciones_generales, semanas, sustituciones y notas_finales.";
+
+  const prompt = String(payload.prompt_interno || "").trim();
+  if (!prompt) {
+    throw new Error("No se encontro prompt_interno para Gemini.");
+  }
+
+  const body = {
+    contents: [
+      {
+        parts: [
+          {
+            text: `${instruction}\n\n${prompt}`
+          }
+        ]
+      }
+    ],
+    generationConfig: {
+      temperature: 0.4,
+      maxOutputTokens: 3072
+    }
+  };
+
+  const url =
+    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent` +
+    `?key=${encodeURIComponent(apiKey)}`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`Gemini HTTP ${response.status}: ${detail.slice(0, 250)}`);
+  }
+
+  const raw = await response.json();
+  const candidates = raw?.candidates || [];
+  if (!candidates.length) {
+    throw new Error("Gemini no devolvio candidates.");
+  }
+
+  const parts = candidates?.[0]?.content?.parts || [];
+  const text = parts
+    .map((part) => (part && typeof part === "object" ? String(part.text || "") : ""))
+    .join("\n")
+    .trim();
+
+  if (!text) {
+    throw new Error("Gemini no devolvio texto util.");
+  }
+
+  return extractJsonFromText(text);
+}
+
+function extractJsonFromText(text) {
+  let raw = String(text || "").trim();
+
+  if (raw.startsWith("```")) {
+    raw = raw.replace(/^```[a-zA-Z]*\n?/, "").replace(/```$/, "").trim();
   }
 
   try {
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-      throw new Error(`Error del endpoint IA (${response.status}).`);
-    }
-
-    const json = await response.json();
-    return validatePlanJson(json);
+    return JSON.parse(raw);
   } catch (error) {
-    console.warn("Fallo endpoint IA. Se usa simulacion local.", error);
-    return simulatePlan(payload);
+    // Intentar extraer primer bloque JSON del texto.
   }
+
+  const start = raw.indexOf("{");
+  if (start < 0) {
+    throw new Error("La respuesta de Gemini no contiene JSON.");
+  }
+
+  let depth = 0;
+  for (let i = start; i < raw.length; i += 1) {
+    const char = raw[i];
+    if (char === "{") depth += 1;
+    if (char === "}") {
+      depth -= 1;
+      if (depth === 0) {
+        const candidate = raw.slice(start, i + 1);
+        return JSON.parse(candidate);
+      }
+    }
+  }
+
+  throw new Error("No se pudo extraer un JSON valido de Gemini.");
 }
 
 function simulatePlan(payload) {
