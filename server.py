@@ -192,7 +192,7 @@ class AppHandler(SimpleHTTPRequestHandler):
 
 def main():
     os.chdir(ROOT)
-    port = int(os.getenv("PORT", "8080"))
+    port = int(os.getenv("PORT", "15000"))
     server = ThreadingHTTPServer(("0.0.0.0", port), AppHandler)
     print(f"Servidor activo en http://0.0.0.0:{port}")
     print("Endpoint IA: POST /api/generar-plan")
